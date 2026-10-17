@@ -1,31 +1,5 @@
 """
 Chlorine production flexibility at Nobian: rolling-horizon (MPC) simulation.
-
-Run:      streamlit run Flexibility_nobian_model_fixed.py
-Packages: pip install streamlit numpy pandas matplotlib openpyxl "pulp<3.0.0" highspy
-          (without highspy the app falls back to CBC: same results, but slower)
-
-What changed compared with the bookkeeping version (numbers = the review points)
-  1. Closed year. Each scenario runs through the price year again and again, with windows that
-     wrap around from the end of the year to its start, until the tank level at the end of a
-     year equals the level at its start. The last simulated year is reported. If the yearly
-     change stops shrinking (for example with a very large tank), the run stops.
-  2. The weighted-average-cost bookkeeping is removed (this also covers point 3). If a year does
-     not close, the remaining tank change is valued at that year's average production cost.
-  4. One input for the initial tank level. It is only the starting guess for year 1.
-  5. Tie-break: the chlorine value gets +0.001 EUR/t. An hour priced exactly at the threshold
-     price then runs at P_max, as the definition of N_max assumes. This only chooses between
-     plans with the same net cost.
-  6. N_max = round(8,760 x 4/7) = round(5,005.7) = 5,006 hours. The app prints it under the table.
-  7. Names follow the report:
-       C_max -> P_max, L_min_ratio -> L_min, L_min_tons -> P_min, D_const -> D, V_max -> S_max,
-       energy_intensity -> E, lookahead -> valuation window (W_V),
-       terminal value -> chlorine value (V_Cl), price threshold -> threshold price,
-       'Dumb 1h (Static)' -> 'Baseline (static threshold)', storage -> tank level,
-       rigid cost -> constant production cost.
-  8. Speed: HiGHS runs inside Python (CBC starts a separate program for every hourly LP), every
-     LP is checked to be solved to optimality, and results are cached: a scenario that was
-     already run with the same settings is not simulated again.
 """
 import time
 
@@ -182,7 +156,7 @@ if valuation_input:
 
 solver_name = st.sidebar.selectbox(
     "Solver", ["HiGHS", "CBC"], index=0,
-    help="Both find the same optimal plan. HiGHS runs inside Python and is faster (needs highspy in requirements.txt).")
+    help="Both find the same optimal plan. HiGHS runs inside Python and is faster.")
 tolerance = st.sidebar.number_input(
     "Closed-year tolerance (t)", min_value=0.0, value=0.5, step=0.1,
     help="A year is closed when the tank level at its end is within this many tons of the level at its start.")
@@ -299,16 +273,20 @@ if run_clicked and ready:
         })
 
     st.table(pd.DataFrame(summary_data))
+#    st.caption(
+#        f"Each scenario runs through the price year until the tank level at the end of the year is within "
+#        f"{tolerance:g} t of the level at its start (closed year). The table shows the last simulated year. "
+#        f"If a year does not close, the tank change is valued at that year's average production cost "
+#        f"(correction column). Constant production ({D:.1f} t/h every hour) costs €{constant_production_cost:,.0f}. "
+#        f"Baseline threshold price: {baseline_threshold_price:.2f} €/MWh, the price at position {N_max_year:,} "
+#        f"of the {hours_in_year:,} sorted prices (N_max = round({hours_in_year:,} × {f_max:.6f}) = "
+#        f"round({hours_in_year * f_max:,.1f}) = {N_max_year:,}). Tie-break: +{TIE_BREAK:g} €/t on the chlorine value."
+#    )
     st.caption(
-        f"Each scenario runs through the price year until the tank level at the end of the year is within "
-        f"{tolerance:g} t of the level at its start (closed year). The table shows the last simulated year. "
-        f"If a year does not close, the tank change is valued at that year's average production cost "
-        f"(correction column). Constant production ({D:.1f} t/h every hour) costs €{constant_production_cost:,.0f}. "
-        f"Baseline threshold price: {baseline_threshold_price:.2f} €/MWh, the price at position {N_max_year:,} "
-        f"of the {hours_in_year:,} sorted prices (N_max = round({hours_in_year:,} × {f_max:.6f}) = "
-        f"round({hours_in_year * f_max:,.1f}) = {N_max_year:,}). Tie-break: +{TIE_BREAK:g} €/t on the chlorine value."
+        f"Constant production ({D:.1f} t/h every hour) costs €{constant_production_cost:,.0f}. "
+        f"Baseline threshold price: {baseline_threshold_price:.2f} €/MWh."
     )
-
+          
     # Visualizations
     st.subheader("Comparative Analysis (Last Simulated Year)")
     fig, axes = plt.subplots(4, 1, figsize=(14, 24))
