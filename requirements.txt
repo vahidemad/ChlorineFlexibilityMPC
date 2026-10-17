@@ -1,0 +1,7 @@
+streamlit
+pandas
+numpy
+pulp<3.0.0
+highspy==1.15.1
+matplotlib
+openpyxl
