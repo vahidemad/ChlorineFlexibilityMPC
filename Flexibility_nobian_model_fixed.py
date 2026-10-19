@@ -429,7 +429,7 @@ if run_clicked and ready:
     scenario_notes = []
     if any(run.get('real') for run in runs_to_execute):
         scenario_notes.append(
-            f"Realistic MPC: uses only prices known at the time.")
+            "Realistic MPC: uses only prices known at the time.")
     if max_savings:
         scenario_notes.append(
             "Perfect foresight: one optimization over the whole year with all prices known.")
