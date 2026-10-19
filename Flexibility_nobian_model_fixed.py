@@ -423,27 +423,16 @@ if run_clicked and ready:
 
     st.table(pd.DataFrame(summary_data))
     st.caption(
-        f"Each scenario runs through the price year until the tank level at the end of the year is within "
-        f"{tolerance:g} t of the level at its start (closed year). The table shows the last simulated year. "
-        f"If a year does not close, the tank change is valued at that year's average production cost "
-        f"(correction column). Constant production ({D:.1f} t/h every hour) costs €{constant_production_cost:,.0f}. "
-        f"Baseline threshold price: {baseline_threshold_price:.2f} €/MWh, the price at position {N_max_year:,} "
-        f"of the {hours_in_year:,} sorted prices (N_max = round({hours_in_year:,} × {f_max:.6f}) = "
-        f"round({hours_in_year * f_max:,.1f}) = {N_max_year:,}). Tie-break: +{TIE_BREAK:g} €/t on the chlorine value."
+        f"Constant production ({D:.1f} t/h every hour) costs €{constant_production_cost:,.0f}. "
+        f"Baseline threshold price: {baseline_threshold_price:.2f} €/MWh.} "
     )
     scenario_notes = []
     if any(run.get('real') for run in runs_to_execute):
         scenario_notes.append(
-            f"Realistic MPC: uses only prices known at the time. Every day at {PUBLICATION_HOUR}:00, when the next "
-            "day's day-ahead prices are known, it makes a new plan over all known prices (until the end of the next "
-            "day, 35 hours on a normal day) and carries it out until the next day's plan. Its chlorine value comes "
-            "from the past valuation window.")
+            f"Realistic MPC: uses only prices known at the time.")
     if max_savings:
         scenario_notes.append(
-            "Perfect foresight: one optimization over the whole year with all prices known, ending at its start "
-            "level; its savings are the maximum possible with this plant and tank, and the share column compares "
-            "every scenario with it. For a year that does not close the share is only approximate, because the "
-            "tank change is valued at the average production cost; it can then even exceed 100%.")
+            "Perfect foresight: one optimization over the whole year with all prices known.")
     if scenario_notes:
         st.caption(" ".join(scenario_notes))
 
