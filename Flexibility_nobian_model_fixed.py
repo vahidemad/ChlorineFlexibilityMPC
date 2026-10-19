@@ -427,21 +427,6 @@ if run_clicked and ready:
         f"Constant production ({D:.1f} t/h every hour) costs €{constant_production_cost:,.0f}. "
         f"Baseline threshold price: {baseline_threshold_price:.2f} €/MWh."
     )
-    scenario_notes = []
-    if any(run.get('real') for run in runs_to_execute):
-        scenario_notes.append(
-            f"Realistic MPC: uses only prices known at the time. Every day at {PUBLICATION_HOUR}:00, when the next "
-            "day's day-ahead prices are known, it makes a new plan over all known prices (until the end of the next "
-            "day, 35 hours on a normal day) and carries it out until the next day's plan. Its chlorine value comes "
-            "from the past valuation window.")
-    if max_savings:
-        scenario_notes.append(
-            "Perfect foresight: one optimization over the whole year with all prices known, ending at its start "
-            "level; its savings are the maximum possible with this plant and tank, and the share column compares "
-            "every scenario with it. For a year that does not close the share is only approximate, because the "
-            "tank change is valued at the average production cost; it can then even exceed 100%.")
-    if scenario_notes:
-        st.caption(" ".join(scenario_notes))
 
     # Visualizations
     st.subheader("Comparative Analysis (Last Simulated Year)")
